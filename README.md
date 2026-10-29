@@ -119,18 +119,72 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Output of `python -m src.main` for the starter pop/happy profile and my late-night study profile:
 
-```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
-```
+```text
+$ python -m src.main
+Loading songs from data/songs.csv...
+Loaded songs: 20
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+Top 5 for: Default pop/happy
+  pop / happy / energy 0.80 / prefers electronic
+============================================================
+ 1. Sunrise City by Neon Echo                    4.88 / 5.00
+      + genre match: pop (+1.50)
+      + mood match: happy (+1.50)
+      + energy 0.82 vs your 0.80 (+1.47)
+      + acousticness 0.18 (+0.41)
+------------------------------------------------------------
+ 2. Rooftop Lights by Indigo Parade              4.01 / 5.00
+      + similar genre: indie pop (+0.75)
+      + mood match: happy (+1.50)
+      + energy 0.76 vs your 0.80 (+1.44)
+      + acousticness 0.35 (+0.33)
+------------------------------------------------------------
+ 3. Gym Hero by Max Pulse                        3.28 / 5.00
+      + genre match: pop (+1.50)
+      + energy 0.93 vs your 0.80 (+1.30)
+      + acousticness 0.05 (+0.47)
+------------------------------------------------------------
+ 4. Concrete Crown by Kilo Verse                 1.93 / 5.00
+      + energy 0.78 vs your 0.80 (+1.47)
+      + acousticness 0.08 (+0.46)
+------------------------------------------------------------
+ 5. Fuego Lento by Ritmo Solar                   1.93 / 5.00
+      + energy 0.80 vs your 0.80 (+1.50)
+      + acousticness 0.15 (+0.42)
+------------------------------------------------------------
+
+Top 5 for: Late-night study
+  lofi / chill / energy 0.40 / likes acoustic
+============================================================
+ 1. Library Rain by Paper Lanterns               4.85 / 5.00
+      + genre match: lofi (+1.50)
+      + mood match: chill (+1.50)
+      + energy 0.35 vs your 0.40 (+1.42)
+      + acousticness 0.86 (+0.43)
+------------------------------------------------------------
+ 2. Midnight Coding by LoRoom                    4.82 / 5.00
+      + genre match: lofi (+1.50)
+      + mood match: chill (+1.50)
+      + energy 0.42 vs your 0.40 (+1.47)
+      + acousticness 0.71 (+0.35)
+------------------------------------------------------------
+ 3. Focus Flow by LoRoom                         3.39 / 5.00
+      + genre match: lofi (+1.50)
+      + energy 0.40 vs your 0.40 (+1.50)
+      + acousticness 0.78 (+0.39)
+------------------------------------------------------------
+ 4. Spacewalk Thoughts by Orbit Bloom            3.28 / 5.00
+      + mood match: chill (+1.50)
+      + energy 0.28 vs your 0.40 (+1.32)
+      + acousticness 0.92 (+0.46)
+------------------------------------------------------------
+ 5. Coffee Shop Stories by Slow Stereo           1.90 / 5.00
+      + energy 0.37 vs your 0.40 (+1.46)
+      + acousticness 0.89 (+0.45)
+------------------------------------------------------------
+```
 
 ---
 
