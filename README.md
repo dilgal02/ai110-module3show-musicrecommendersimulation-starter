@@ -17,14 +17,14 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Before this project I thought Spotify just looked at what genre I listen to. It turns out real platforms mix two ideas. Collaborative filtering looks at what other people with a similar listening history play, skip and add to playlists, so it can suggest songs I would never find on my own. Content-based filtering looks at the song itself (genre, tempo, energy, how "happy" it sounds) and finds tracks that are similar to the ones I already like. Spotify and YouTube use both at the same time, plus a lot of behavior data like skips and watch time. My simulation only has a CSV with 10 songs and no data about other users, so I'm building a content-based recommender. It will prioritize genre first, then mood, and then how close the song's energy is to what the user wants. I care about "close to" and not "higher", because if someone wants chill music, the most energetic song in the list is the worst pick for them, not the best.
+Before this project I thought Spotify just looked at what genre I listen to. It turns out real platforms mix two ideas. Collaborative filtering looks at what other people with a similar listening history play, skip and add to playlists, so it can suggest songs I would never find on my own. Content-based filtering looks at the song itself (genre, tempo, energy, how "happy" it sounds) and finds tracks that are similar to the ones I already like. Spotify and YouTube use both at the same time, plus a lot of behavior data like skips and watch time. My simulation only has a CSV with 10 songs and no data about other users, so I'm building a content-based recommender. Genre and mood count the same, and after that it looks at how close the song's energy is to what the user wants. I care about "close to" and not "higher", because if someone wants chill music, the most energetic song in the list is the worst pick for them, not the best.
 
 **Song features I use in the score:**
 
-- `genre` - exact match gets the most points, a partial match like "pop" and "indie pop" gets half
-- `mood` - match gets points
+- `genre` - exact match gets full points, a partial match like "pop" and "indie pop" gets half
+- `mood` - exact match gets points
 - `energy` - compared to the user's target energy
-- `acousticness` - small bonus or penalty depending on `likes_acoustic`
+- `acousticness` - small bonus for acoustic songs if `likes_acoustic` is True, or for electronic songs if it's False
 
 `Song` also has `tempo_bpm`, `valence` and `danceability`, but I'm not using them for now. When I looked at the data, tempo, danceability and acousticness go up and down almost together with energy, so adding all of them would basically count energy three or four times. Valence is the only one that actually behaves differently, so I might add it later.
 
@@ -48,7 +48,16 @@ user_prefs = {
 
 This is a late-night study listener. I picked it because the catalog has three lofi songs, so genre alone can't decide the order and mood and energy have to do real work. It should also be easy to tell apart from "intense rock": Storm Runner has the wrong genre, the wrong mood, energy 0.91 and almost no acoustic sound, so it should end up near the bottom of the list.
 
-**How a song gets its score:** +2 for a genre match (+1 if it's only partial), +1 for a mood match, up to +1.5 for energy using `1.5 * (1 - abs(song.energy - target_energy))`, and up to +0.5 for the acoustic preference. Then I sort all songs from highest to lowest score and return the top k.
+**Algorithm recipe** (max score is 5.0):
+
+1. Score every song in the catalog. There are no hard filters, so a song with the wrong genre can still win if everything else fits.
+2. **Genre:** +1.5 for an exact match, +0.75 for a partial match ("pop" and "indie pop").
+3. **Mood:** +1.5 for an exact match.
+4. **Energy:** up to +1.5 using `1.5 * (1 - abs(song.energy - target_energy))`.
+5. **Acousticness:** up to +0.5. If `likes_acoustic` is True the song gets `0.5 * acousticness`, otherwise `0.5 * (1 - acousticness)`.
+6. Sort from highest to lowest score (ties keep the CSV order) and return the top k. The explanation lists which rules gave the song points.
+
+**Why genre and mood are worth the same:** my first plan was +2 for genre and +1 for mood. When I tested it on a few profiles, a "pop, happy" listener got Gym Hero (pop, intense) above Rooftop Lights (indie pop, happy), and a "pop, chill, low energy" listener got the energetic Sunrise City as the #2 pick. Genre is your long-term taste, but mood is what you want right now, so I made them equal. That put Rooftop Lights at #2 and pushed Sunrise City down to #4. I also tried making mood worth more than genre (1 and 2). It helped the "pop + chill" listener even more, but then a genre match was worth less than being 0.67 closer in energy, so I kept them equal.
 
 ---
 
