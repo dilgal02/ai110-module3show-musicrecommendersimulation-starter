@@ -35,6 +35,19 @@ Before this project I thought Spotify just looked at what genre I listen to. It 
 - `target_energy` (from 0 to 1)
 - `likes_acoustic` (True / False)
 
+**The taste profile I test with** (in `src/main.py`):
+
+```python
+user_prefs = {
+    "favorite_genre": "lofi",
+    "favorite_mood": "chill",
+    "target_energy": 0.40,
+    "likes_acoustic": True,
+}
+```
+
+This is a late-night study listener. I picked it because the catalog has three lofi songs, so genre alone can't decide the order and mood and energy have to do real work. It should also be easy to tell apart from "intense rock": Storm Runner has the wrong genre, the wrong mood, energy 0.91 and almost no acoustic sound, so it should end up near the bottom of the list.
+
 **How a song gets its score:** +2 for a genre match (+1 if it's only partial), +1 for a mood match, up to +1.5 for energy using `1.5 * (1 - abs(song.energy - target_energy))`, and up to +0.5 for the acoustic preference. Then I sort all songs from highest to lowest score and return the top k.
 
 ---
