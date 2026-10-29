@@ -69,7 +69,7 @@ flowchart LR
     D --> E["Top k songs<br/>with reasons"]
 ```
 
-For example, the row `4,Library Rain,...,lofi,chill,0.35,...,0.86` becomes a dict with `energy=0.35`, gets +1.5 (genre) +1.5 (mood) +1.43 (energy) +0.43 (acoustic) = 4.85 for my lofi listener, and ends up #1. The expected top 5 for that profile is Library Rain, Midnight Coding, Focus Flow, Spacewalk Thoughts and Coffee Shop Stories, so I can check my code against it.
+For example, the row `4,Library Rain,...,lofi,chill,0.35,...,0.86` becomes a dict with `energy=0.35`, gets +1.5 (genre) +1.5 (mood) +1.42 (energy) +0.43 (acoustic) = 4.85 for my lofi listener, and ends up #1. The expected top 5 for that profile is Library Rain, Midnight Coding, Focus Flow, Spacewalk Thoughts and Coffee Shop Stories, so I can check my code against it.
 
 **Biases I expect:**
 
