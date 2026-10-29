@@ -33,6 +33,7 @@ PROFILES = {
 
 
 def print_recommendations(name: str, user_prefs: dict, recommendations: list) -> None:
+    """Print one profile's recommendations with their scores and reasons."""
     acoustic = "likes acoustic" if user_prefs["likes_acoustic"] else "prefers electronic"
     print(f"\nTop {len(recommendations)} for: {name}")
     print(f"  {user_prefs['favorite_genre']} / {user_prefs['favorite_mood']} / "

@@ -21,16 +21,24 @@ Prompts:
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+The recommender works like a judge handing out points. It looks at every song in the catalog, one at a time, and gives it points for how well it fits what the listener asked for. Then it lines the songs up from most points to fewest and shows the top five.
 
-Prompts:  
+**What it knows about each song:** its genre (like pop or lofi), its mood (like happy or chill), its energy (how calm or intense it feels, from 0 to 1) and its acousticness (how much it sounds like real instruments instead of electronic sounds).
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+**What it knows about the listener:** their favorite genre, the mood they want, how much energy they want, and whether they like acoustic music.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+**How the points work** (a perfect song gets 5 points):
+
+- **Genre:** 1.5 points if it's the listener's favorite genre, and half of that if the name is a close relative, like "indie pop" for a pop fan.
+- **Mood:** 1.5 points if the mood matches.
+- **Energy:** up to 1.5 points. A song gets all 1.5 when its energy is exactly what the listener wants, and fewer the further away it is. It's about being close, not about being high: for someone who wants calm music, the most intense song is the worst pick, not the best.
+- **Acoustic sound:** up to 0.5 points. If the listener likes acoustic music, more acoustic songs get more points. If not, more electronic songs do. This is a small tiebreaker.
+
+Every song also gets a short list of reasons, like "mood match: chill (+1.50)", so the listener can see exactly why it was picked.
+
+**Example:** my late-night study listener wants lofi, a chill mood, low energy and acoustic sound. "Library Rain" matches the genre and the mood, has almost exactly the right energy and sounds very acoustic, so it gets 4.85 out of 5 and comes first. "Storm Runner" is a loud rock song that matches none of that, so it gets 0.79 and lands near the bottom.
+
+**What I changed from the starter logic:** the usual starting point gives 2 points for genre and 1 for mood. When I tested that, a "happy pop" listener got an intense gym song as their #2 pick, ahead of a happy indie pop song, just because genre was worth twice as much as mood. I think the genre you usually like and the mood you're in right now matter about the same, so I made them equal. I also left out tempo and danceability, because they mostly rise and fall together with energy, so adding them would count energy two or three times. Valence (how happy a song sounds) behaves differently, so I might add it later.
 
 ---
 
