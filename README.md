@@ -17,7 +17,7 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Before this project I thought Spotify just looked at what genre I listen to. It turns out real platforms mix two ideas. Collaborative filtering looks at what other people with a similar listening history play, skip and add to playlists, so it can suggest songs I would never find on my own. Content-based filtering looks at the song itself (genre, tempo, energy, how "happy" it sounds) and finds tracks that are similar to the ones I already like. Spotify and YouTube use both at the same time, plus a lot of behavior data like skips and watch time. My simulation only has a CSV with 10 songs and no data about other users, so I'm building a content-based recommender. Genre and mood count the same, and after that it looks at how close the song's energy is to what the user wants. I care about "close to" and not "higher", because if someone wants chill music, the most energetic song in the list is the worst pick for them, not the best.
+Before this project I thought Spotify just looked at what genre I listen to. It turns out real platforms mix two ideas. Collaborative filtering looks at what other people with a similar listening history play, skip and add to playlists, so it can suggest songs I would never find on my own. Content-based filtering looks at the song itself (genre, tempo, energy, how "happy" it sounds) and finds tracks that are similar to the ones I already like. Spotify and YouTube use both at the same time, plus a lot of behavior data like skips and watch time. My simulation only has a CSV with 20 songs and no data about other users, so I'm building a content-based recommender. Genre and mood count the same, and after that it looks at how close the song's energy is to what the user wants. I care about "close to" and not "higher", because if someone wants chill music, the most energetic song in the list is the worst pick for them, not the best.
 
 **Song features I use in the score:**
 
@@ -58,6 +58,27 @@ This is a late-night study listener. I picked it because the catalog has three l
 6. Sort from highest to lowest score (ties keep the CSV order) and return the top k. The explanation lists which rules gave the song points.
 
 **Why genre and mood are worth the same:** my first plan was +2 for genre and +1 for mood. When I tested it on a few profiles, a "pop, happy" listener got Gym Hero (pop, intense) above Rooftop Lights (indie pop, happy), and a "pop, chill, low energy" listener got the energetic Sunrise City as the #2 pick. Genre is your long-term taste, but mood is what you want right now, so I made them equal. That put Rooftop Lights at #2 and pushed Sunrise City down to #4. I also tried making mood worth more than genre (1 and 2). It helped the "pop + chill" listener even more, but then a genre match was worth less than being 0.67 closer in energy, so I kept them equal.
+
+**My plan (data flow):**
+
+```mermaid
+flowchart LR
+    A["User prefs<br/>genre, mood, energy, acoustic"] --> C
+    B["data/songs.csv"] --> L["load_songs<br/>strings to numbers"] --> C
+    C["Loop: score_song on every song<br/>genre +1.5, mood +1.5,<br/>energy up to +1.5, acoustic up to +0.5"] --> D["Sort by score,<br/>highest first"]
+    D --> E["Top k songs<br/>with reasons"]
+```
+
+For example, the row `4,Library Rain,...,lofi,chill,0.35,...,0.86` becomes a dict with `energy=0.35`, gets +1.5 (genre) +1.5 (mood) +1.43 (energy) +0.43 (acoustic) = 4.85 for my lofi listener, and ends up #1. The expected top 5 for that profile is Library Rain, Midnight Coding, Focus Flow, Spacewalk Thoughts and Coffee Shop Stories, so I can check my code against it.
+
+**Biases I expect:**
+
+- **Mood is exact-match only.** "relaxed", "peaceful" and "focused" get 0 points, the same as "sad" or "angry". So for my lofi listener the sad Empty Station Blues ranks above the peaceful Moonlit Nocturne, because only energy and acousticness are left to decide.
+- **Genre can still beat what the user asked for.** A genre match alone is worth 1.5 points, and the energy rule is forgiving. A "pop, chill, low energy" listener still gets Gym Hero (energy 0.93) in their top 5.
+- **Related genres don't count.** The partial match only works when one name contains the other ("pop" and "indie pop"). Lofi and ambient, or r&b and hip hop, are treated as completely unrelated.
+- **Small, uneven catalog.** 15 of the 17 genres have only one song, so a metal or folk fan gets one real match and the rest of their top 5 is filled by energy alone. The catalog is also mostly Western genres.
+- **Made-up numbers.** The values for songs 11-20 were estimated with AI, not measured, so they may carry stereotypes like "classical is always calm" or "metal is always angry".
+- **One genre and one mood per user.** The profile can't describe someone with mixed taste.
 
 ---
 
