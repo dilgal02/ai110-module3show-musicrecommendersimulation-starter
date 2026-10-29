@@ -7,6 +7,7 @@ GENRE_POINTS = 1.5
 MOOD_POINTS = 1.5
 ENERGY_POINTS = 1.5
 ACOUSTIC_POINTS = 0.5
+MAX_SCORE = GENRE_POINTS + MOOD_POINTS + ENERGY_POINTS + ACOUSTIC_POINTS
 
 @dataclass
 class Song:
@@ -113,6 +114,7 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
     Functional implementation of the recommendation logic.
     Required by src/main.py
     """
-    # TODO: Implement scoring and ranking logic
-    # Expected return format: (song_dict, score, explanation)
-    return []
+    # judge every song, then rank; sorted() is stable, so ties keep their CSV order
+    judged = [(song, *score_song(user_prefs, song)) for song in songs]
+    ranked = sorted(judged, key=lambda item: item[1], reverse=True)
+    return [(song, score, "; ".join(reasons)) for song, score, reasons in ranked[:k]]
