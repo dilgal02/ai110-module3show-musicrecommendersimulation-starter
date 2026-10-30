@@ -76,6 +76,8 @@ The score is shown out of the best possible score for that profile, so Family Ro
 | `mood-first` | 1.0 | 2.0 | 1.5 | 0.5 | the mood you want beats the genre label |
 | `energy-focused` | 0.75 | 1.5 | 3.0 | 0.5 | energy counts double, genre half |
 
+**Diversity penalty (Challenge 3):** with `--diverse`, the top 5 is built one song at a time. Before each pick, a song loses 1.0 point for every song by the same artist that is already in the list, and 0.5 for every song of the same genre. The penalty shows up in the reasons, like "artist already in list: LoRoom (-1.00)". When I tested 2,720 different listeners, the share of top 5 lists with a repeated artist went from 12% to 0%, and lists with 3 or more songs of one genre went from 6% to 0%. The downside: for Chill Lofi, Focus Flow (lofi, and by LoRoom again) drops from #3 to out of the top 5, and the sad Empty Station Blues takes the last spot. So more variety can also mean a slightly worse match, and that's why it's a flag and not the default.
+
 **Why genre and mood are worth the same:** my first plan was +2 for genre and +1 for mood. When I tested it on a few profiles, a "pop, happy" listener got Gym Hero (pop, intense) above Rooftop Lights (indie pop, happy), and a "pop, chill, low energy" listener got the energetic Sunrise City as the #2 pick. Genre is your long-term taste, but mood is what you want right now, so I made them equal. That put Rooftop Lights at #2 and pushed Sunrise City down to #4. I also tried making mood worth more than genre (1 and 2). It helped the "pop + chill" listener even more, but then a genre match was worth less than being 0.67 closer in energy, so I kept them equal.
 
 **My plan (data flow):**
@@ -128,6 +130,13 @@ python -m src.main
 
 ```bash
 python -m src.main --mode mood-first   # balanced, genre-first, mood-first or energy-focused
+```
+
+5. Turn on the diversity penalty with `--diverse` (works with any mode):
+
+```bash
+python -m src.main --diverse
+python -m src.main --mode mood-first --diverse
 ```
 
 ### Running Tests
