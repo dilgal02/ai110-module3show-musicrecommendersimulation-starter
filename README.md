@@ -2,16 +2,16 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+My version is called **VibeJudge 1.0**. It's a small content-based music recommender that runs in the terminal. It reads 20 songs from `data/songs.csv`, gives every song points for how well it matches a listener's favorite genre, mood, energy and acoustic taste, and prints the top 5 with the reason behind every point.
 
-Your goal is to:
+On top of the basic recipe it has:
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+- optional preferences for mood tags, decade, popularity, instrumental songs and explicit lyrics (Challenge 1)
+- four scoring modes you can switch with `--mode` (Challenge 2)
+- a diversity penalty with `--diverse`, so the same artist doesn't show up twice (Challenge 3)
+- a summary table with `--table` (Challenge 4)
 
-Replace this paragraph with your own summary of what your version does.
+I tested it with four listener profiles and some trick profiles, and wrote down what it gets right and wrong in the [model card](model_card.md).
 
 ---
 
@@ -359,25 +359,26 @@ Top 5 for: Chill Lofi
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
-
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+- **Genre 2 + mood 1 vs. equal weights:** with my first plan (genre 2.0, mood 1.0), a happy pop fan got Gym Hero (intense) above Rooftop Lights (happy), 3.78 vs 3.77, and a "pop but chill" listener got the loud Sunrise City as #2. With genre and mood both at 1.5, Rooftop Lights is #2 and Sunrise City drops to #4. So I kept them equal. You can still try the old version with `--mode genre-first`.
+- **Double energy, half genre:** this mostly just swapped songs that were already almost tied. For Chill Lofi, Midnight Coding took #1 from Library Rain (5.54 vs 5.53). It helped a "pop but chill, low energy" listener (the loud songs left the list), but it hurt a "pop but sad, high energy" listener, because the only sad song fell out of the top 5. So it made the results different, not better. It's now `--mode energy-focused`.
+- **How fragile is #1?** Library Rain beats Midnight Coding by only 0.03 points, because it sounds more acoustic. If acoustic is worth 0.3 instead of 0.5, or energy is worth 2.5 instead of 1.5, they switch. Making genre worth 3.0 didn't change the #1 song for any profile.
+- **Adding valence (tried once, not kept):** a target valence of 0.6 pushed the sad blues song from #6 to #9 for Chill Lofi. That helps, but it didn't fix everything, so I left it as an idea for later.
+- **Trick profiles:** one extra space ("Pop ") dropped Sunrise City from 4.88 to 2.63, an energy of 5 made every score negative, "False" typed as text counted as yes, and two inputs (a list of genres, energy as text) crashed the program.
+- **Every possible listener:** I ran every combination of genre, mood, energy and acoustic taste (2,720 listeners). Energetic acoustic listeners got a weak #1 song 82% of the time, and two calm acoustic songs showed up in 42% of all top 5 lists, while Iron Tide showed up in only 14%.
+- **Diversity penalty:** with `--diverse`, top 5 lists with a repeated artist went from 12% to 0%. But Chill Lofi lost Focus Flow, which was actually a great match.
 
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- **Tiny, uneven catalog:** only 20 made-up songs, and 15 of the 17 genres have just one song. So for most listeners, spots 2 to 5 are picked by energy alone.
+- **Exact labels:** "chill" and "relaxed" count as totally different, and so do rock and metal. Mood tags help, but only if the listener sets them.
+- **"Calm = acoustic" assumption:** there are no energetic acoustic songs, so people who like those get bad matches.
+- **Doesn't understand much:** no lyrics, no language, no listening history, and only one genre and one mood per listener.
+- **No input checks:** a space in "Pop ", an energy of 5 or "False" typed as text give wrong results, and some inputs crash it.
+- **Popularity bias:** the popularity rule can push songs that are already popular even higher.
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+More details are in the [model card](model_card.md), section 6.
 
 ---
 
@@ -387,10 +388,9 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+A recommender doesn't really "know" music. It turns every song into a few numbers and labels, turns me into a few target values, and then it's just math: add up points for every match and sort the list. What surprised me is how much that already feels like a real app, especially with the reasons under every song. But it also showed me that every number is a choice. Changing genre from 2 points to 1.5 changed which songs people got, so whoever picks the weights is kind of deciding what "a good match" means.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+Bias can show up even when nobody writes anything unfair. My code treats everyone the same, but my song list has no energetic acoustic songs, only one song for most genres, and mostly Western music, so some listeners just get worse results. The labels are a problem too: if your mood is called "relaxed" instead of "chill", you get zero points for it. In a real app with millions of users, the same thing could happen to people whose music or language isn't covered well in the data, and they would probably never find out why their recommendations are worse.
 
 
 

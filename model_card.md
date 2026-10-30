@@ -84,11 +84,12 @@ The system quietly assumes that calm music is acoustic and energetic music is el
 
 **Profiles I tested**
 
-I made three main listeners and ran the program for each one:
+I made three main listeners and ran the program for each one, and later added a fourth one for Challenge 1:
 
 - **High-Energy Pop:** likes pop, wants happy songs, wants high energy (0.8), doesn't care about acoustic stuff.
 - **Chill Lofi:** likes lofi, wants chill songs, wants low energy (0.4), likes acoustic. This is basically me studying at night.
 - **Deep Intense Rock:** likes rock, wants intense songs, wants very high energy (0.9), doesn't like acoustic.
+- **Family Road Trip:** the same as High-Energy Pop, plus mood tags (sunny, uplifting, warm), the 2010s, popularity around 80, songs with singing, and no explicit lyrics. It keeps the same top 3 as High-Energy Pop, but the explicit Concrete Crown and Fuego Lento drop out, and two songs tagged "sunny" or "uplifting" come in.
 
 Then I tried some weird "trick" listeners to see if I could break it: a pop fan who wants sad songs but also high energy, a k-pop fan (there is no k-pop in my list), the happy pop listener typed with extra spaces, an energy of 5 (it's supposed to be 0 to 1), and the word "False" typed as text. Two tries made the program crash completely: giving it two genres at once, and typing the energy as text instead of a number.
 
