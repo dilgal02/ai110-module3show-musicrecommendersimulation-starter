@@ -139,6 +139,12 @@ python -m src.main --diverse
 python -m src.main --mode mood-first --diverse
 ```
 
+6. Show the results as a summary table with `--table` (works with the other flags too):
+
+```bash
+python -m src.main --table
+```
+
 ### Running Tests
 
 Run the starter tests with:
@@ -314,6 +320,39 @@ Top 5 for: Family Road Trip
       + popularity 57 vs your 80 (+0.39)
       + instrumentalness 0.08 (+0.46)
 ------------------------------------------------------------
+```
+
+### Table view (`--table`)
+
+The same results as a table. Every reason gets its own line inside the cell, and long text wraps instead of being cut off. This is the Chill Lofi part of `python -m src.main --table`:
+
+```text
+Top 5 for: Chill Lofi
+  lofi / chill / energy 0.40 / likes acoustic
++----+--------------------------+--------+--------------------------------------------+
+| #  | Song                     | Score  | Reasons                                    |
++====+==========================+========+============================================+
+| 1  | Library Rain             |   4.85 | genre match: lofi (+1.50)                  |
+|    | by Paper Lanterns        | / 5.00 | mood match: chill (+1.50)                  |
+|    |                          |        | energy 0.35 vs your 0.40 (+1.42)           |
+|    |                          |        | acousticness 0.86 (+0.43)                  |
++----+--------------------------+--------+--------------------------------------------+
+| 2  | Midnight Coding          |   4.82 | genre match: lofi (+1.50)                  |
+|    | by LoRoom                | / 5.00 | mood match: chill (+1.50)                  |
+|    |                          |        | energy 0.42 vs your 0.40 (+1.47)           |
+|    |                          |        | acousticness 0.71 (+0.35)                  |
++----+--------------------------+--------+--------------------------------------------+
+| 3  | Focus Flow               |   3.39 | genre match: lofi (+1.50)                  |
+|    | by LoRoom                | / 5.00 | energy 0.40 vs your 0.40 (+1.50)           |
+|    |                          |        | acousticness 0.78 (+0.39)                  |
++----+--------------------------+--------+--------------------------------------------+
+| 4  | Spacewalk Thoughts       |   3.28 | mood match: chill (+1.50)                  |
+|    | by Orbit Bloom           | / 5.00 | energy 0.28 vs your 0.40 (+1.32)           |
+|    |                          |        | acousticness 0.92 (+0.46)                  |
++----+--------------------------+--------+--------------------------------------------+
+| 5  | Coffee Shop Stories      |   1.90 | energy 0.37 vs your 0.40 (+1.46)           |
+|    | by Slow Stereo           | / 5.00 | acousticness 0.89 (+0.45)                  |
++----+--------------------------+--------+--------------------------------------------+
 ```
 
 ---
