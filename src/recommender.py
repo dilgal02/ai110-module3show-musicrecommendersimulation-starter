@@ -16,6 +16,10 @@ POPULARITY_POINTS = 0.5
 INSTRUMENTAL_POINTS = 0.5
 EXPLICIT_PENALTY = 1.0
 
+# Diversity penalty (Challenge 3), per song already in the top list
+ARTIST_PENALTY = 1.0
+GENRE_PENALTY = 0.5
+
 @dataclass(frozen=True)
 class ScoringMode:
     """A ranking strategy: how many points each core rule in score_song is worth."""
@@ -201,10 +205,33 @@ def max_score(user_prefs: Dict, mode: ScoringMode = DEFAULT_MODE) -> float:
         total += INSTRUMENTAL_POINTS
     return total
 
+def pick_diverse(ranked: List[Tuple[Dict, float, List[str]]], k: int) -> List[Tuple[Dict, float, List[str]]]:
+    """Build the top k one song at a time, taking points off artists and genres already picked."""
+    picked = []
+    remaining = list(ranked)
+    while remaining and len(picked) < k:
+        candidates = []
+        for song, score, reasons in remaining:
+            penalties = []
+            same_artist = sum(1 for other, _, _ in picked if other["artist"] == song["artist"])
+            if same_artist:
+                penalties.append((ARTIST_PENALTY * same_artist, f"artist already in list: {song['artist']}"))
+            same_genre = sum(1 for other, _, _ in picked if other["genre"] == song["genre"])
+            if same_genre:
+                penalties.append((GENRE_PENALTY * same_genre, f"genre already in list {same_genre}x: {song['genre']}"))
+            adjusted = score - sum(points for points, _ in penalties)
+            candidates.append((song, adjusted, reasons + [f"{text} (-{points:.2f})" for points, text in penalties]))
+        # max() keeps the first of equal scores, so ties still follow the ranked order
+        best = max(candidates, key=lambda item: item[1])
+        picked.append(best)
+        remaining = [item for item in remaining if item[0] is not best[0]]
+    return picked
+
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5,
-                    mode: ScoringMode = DEFAULT_MODE) -> List[Tuple[Dict, float, str]]:
-    """Score every song, sort from highest to lowest, and return the top k as (song, score, explanation)."""
+                    mode: ScoringMode = DEFAULT_MODE, diverse: bool = False) -> List[Tuple[Dict, float, str]]:
+    """Score every song, rank them (optionally with the diversity penalty), and return the top k."""
     # judge every song, then rank; sorted() is stable, so ties keep their CSV order
     judged = [(song, *score_song(user_prefs, song, mode)) for song in songs]
     ranked = sorted(judged, key=lambda item: item[1], reverse=True)
-    return [(song, score, "; ".join(reasons)) for song, score, reasons in ranked[:k]]
+    top = pick_diverse(ranked, k) if diverse else ranked[:k]
+    return [(song, score, "; ".join(reasons)) for song, score, reasons in top]

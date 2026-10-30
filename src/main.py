@@ -11,7 +11,8 @@ You will implement the functions in recommender.py:
 
 import argparse
 
-from src.recommender import load_songs, recommend_songs, max_score, MODES
+from src.recommender import (load_songs, recommend_songs, max_score, MODES,
+                             ARTIST_PENALTY, GENRE_PENALTY)
 
 WIDTH = 60
 
@@ -87,14 +88,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Music Recommender Simulation")
     parser.add_argument("--mode", choices=MODES, default="balanced",
                         help="ranking strategy to use (default: balanced)")
-    mode = MODES[parser.parse_args().mode]
+    parser.add_argument("--diverse", action="store_true",
+                        help="penalize artists and genres that are already in the top list")
+    args = parser.parse_args()
+    mode = MODES[args.mode]
 
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
     print(f"Scoring mode: {mode.name} - {mode.description}")
+    if args.diverse:
+        print(f"Diversity penalty: on (-{ARTIST_PENALTY:.2f} per repeated artist, "
+              f"-{GENRE_PENALTY:.2f} per repeated genre)")
 
     for name, user_prefs in PROFILES.items():
-        recommendations = recommend_songs(user_prefs, songs, k=5, mode=mode)
+        recommendations = recommend_songs(user_prefs, songs, k=5, mode=mode, diverse=args.diverse)
         print_recommendations(name, user_prefs, recommendations, max_score(user_prefs, mode))
 
 
