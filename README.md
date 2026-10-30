@@ -119,14 +119,18 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Output of `python -m src.main` for the starter pop/happy profile and my late-night study profile:
+Output of `python -m src.main`, one block per profile. Every run starts with:
 
 ```text
 $ python -m src.main
 Loading songs from data/songs.csv...
 Loaded songs: 20
+```
 
-Top 5 for: Default pop/happy
+### High-Energy Pop
+
+```text
+Top 5 for: High-Energy Pop
   pop / happy / energy 0.80 / prefers electronic
 ============================================================
  1. Sunrise City by Neon Echo                    4.88 / 5.00
@@ -154,8 +158,12 @@ Top 5 for: Default pop/happy
       + energy 0.80 vs your 0.80 (+1.50)
       + acousticness 0.15 (+0.42)
 ------------------------------------------------------------
+```
 
-Top 5 for: Late-night study
+### Chill Lofi
+
+```text
+Top 5 for: Chill Lofi
   lofi / chill / energy 0.40 / likes acoustic
 ============================================================
  1. Library Rain by Paper Lanterns               4.85 / 5.00
@@ -183,6 +191,37 @@ Top 5 for: Late-night study
  5. Coffee Shop Stories by Slow Stereo           1.90 / 5.00
       + energy 0.37 vs your 0.40 (+1.46)
       + acousticness 0.89 (+0.45)
+------------------------------------------------------------
+```
+
+### Deep Intense Rock
+
+```text
+Top 5 for: Deep Intense Rock
+  rock / intense / energy 0.90 / prefers electronic
+============================================================
+ 1. Storm Runner by Voltline                     4.93 / 5.00
+      + genre match: rock (+1.50)
+      + mood match: intense (+1.50)
+      + energy 0.91 vs your 0.90 (+1.48)
+      + acousticness 0.10 (+0.45)
+------------------------------------------------------------
+ 2. Gym Hero by Max Pulse                        3.43 / 5.00
+      + mood match: intense (+1.50)
+      + energy 0.93 vs your 0.90 (+1.46)
+      + acousticness 0.05 (+0.47)
+------------------------------------------------------------
+ 3. Afterglow Rush by Pulse Theory               1.92 / 5.00
+      + energy 0.95 vs your 0.90 (+1.43)
+      + acousticness 0.02 (+0.49)
+------------------------------------------------------------
+ 4. Iron Tide by Black Meridian                  1.88 / 5.00
+      + energy 0.97 vs your 0.90 (+1.40)
+      + acousticness 0.03 (+0.48)
+------------------------------------------------------------
+ 5. Sunrise City by Neon Echo                    1.79 / 5.00
+      + energy 0.82 vs your 0.90 (+1.38)
+      + acousticness 0.18 (+0.41)
 ------------------------------------------------------------
 ```
 

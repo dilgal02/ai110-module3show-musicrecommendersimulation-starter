@@ -16,18 +16,25 @@ WIDTH = 60
 # Keys match the UserProfile fields so both versions of the recommender use the same profile.
 PROFILES = {
     # the starter example profile
-    "Default pop/happy": {
+    "High-Energy Pop": {
         "favorite_genre": "pop",
         "favorite_mood": "happy",
         "target_energy": 0.80,
         "likes_acoustic": False,
     },
     # my taste profile: a late-night study listener who wants calm, acoustic-leaning lofi
-    "Late-night study": {
+    "Chill Lofi": {
         "favorite_genre": "lofi",
         "favorite_mood": "chill",
         "target_energy": 0.40,
         "likes_acoustic": True,
+    },
+    # the opposite of Chill Lofi on every feature
+    "Deep Intense Rock": {
+        "favorite_genre": "rock",
+        "favorite_mood": "intense",
+        "target_energy": 0.90,
+        "likes_acoustic": False,
     },
 }
 
