@@ -60,12 +60,40 @@ What changed in the results: compared to High-Energy Pop, Family Road Trip keeps
 
 **Which design pattern did you use?**
 
-<!-- e.g., Strategy, Factory, Observer, etc. -->
+A simple Strategy pattern. Each scoring mode is a small `ScoringMode` object that holds how many points the genre, mood, energy and acoustic rules are worth. `score_song` gets the mode as a parameter and uses its numbers instead of fixed constants. There are four modes: Balanced (the default), Genre-First, Mood-First and Energy-Focused.
 
 **How did AI help you brainstorm or implement it?**
 
-<!-- Describe the conversation or suggestions that led to your decision -->
+Prompt I used:
+
+> Attached: @src/recommender.py. I want to add multiple scoring modes (Balanced, Genre-First, Mood-First, Energy-Focused) that a user can switch between in main.py. Brainstorm 3-4 design options for this, including a simple Strategy pattern, and compare them: how much code changes when I add a new mode, how easy it is to break the existing scoring, and how readable it is for a beginner. Recommend one. Then implement it on a branch called experiment/mood-first, keep Balanced as the default so `python -m src.main` gives the same results as before, add a --mode flag to main.py, and verify every mode by running it.
+
+The AI compared four options:
+
+| Option | Adding a new mode | Risk of breaking scoring |
+|---|---|---|
+| `if mode == ...` chain inside `score_song` | edit `score_song` every time | high |
+| one scoring function per mode | copy the whole function | high, the copies drift apart |
+| **strategy objects with weights (chosen)** | **one line in `MODES`** | **low, the rules stay in one place** |
+| abstract base class + subclass per mode | a new class every time | low, but overkill for 4 numbers |
+
+It recommended the strategy objects, because all the rules stay in one `score_song` and a mode only says how much each rule is worth. Other ideas from the brainstorm that I kept:
+
+- Keep Balanced as the default, so the old command gives the same results as before. This was checked: the output is identical except for the new "Scoring mode" line.
+- Build the Balanced mode from the existing constants, so my recipe numbers only live in one place.
+- Use a `--mode` flag, so switching modes doesn't mean editing the code.
+- Try it on the branch `experiment/mood-first` first, and merge it back into main only after the checks passed.
+
+Checks after the change: for every mode, every profile and every song (320 checks) the score equals the sum of the reasons and never goes above the max. A wrong mode name gives a clear error, and the tests still pass. Genre-First brings back the problem I found in Phase 2 (Gym Hero above Rooftop Lights for a happy pop fan, 3.78 vs 3.77), and Energy-Focused gives exactly the same numbers as my weight-shift experiment. So the modes really reproduce the experiments.
+
+What the modes change:
+
+- **Genre-First:** Gym Hero jumps to #2 for High-Energy Pop, just because it has the pop label.
+- **Mood-First:** Spacewalk Thoughts (ambient, chill) beats Focus Flow (lofi, focused) for Chill Lofi.
+- **Energy-Focused:** Midnight Coding takes #1 from Library Rain, because its energy is closer.
 
 **How does the pattern appear in your final code?**
 
-<!-- Point to the relevant class or method -->
+- `ScoringMode` and the `MODES` dictionary at the top of `src/recommender.py`.
+- `score_song(user_prefs, song, mode)`, `recommend_songs(..., mode)` and `max_score(user_prefs, mode)` all take the mode as a parameter, with Balanced as the default.
+- The `--mode` flag in `src/main.py`, for example `python -m src.main --mode mood-first`.
