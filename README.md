@@ -67,6 +67,15 @@ This is a late-night study listener. I picked it because the catalog has three l
 
 The score is shown out of the best possible score for that profile, so Family Road Trip (High-Energy Pop plus all the new preferences) is out of 7.5.
 
+**Scoring modes (Challenge 2):** the recipe above is the `balanced` mode, and it's the default. You can switch to another ranking strategy with `--mode`. Each mode only changes how much the four main rules are worth, the rules themselves stay the same:
+
+| Mode | Genre | Mood | Energy | Acoustic | Idea |
+|---|---|---|---|---|---|
+| `balanced` | 1.5 | 1.5 | 1.5 | 0.5 | my recipe, genre and mood count the same |
+| `genre-first` | 2.0 | 1.0 | 1.5 | 0.5 | the starter idea, genre counts double |
+| `mood-first` | 1.0 | 2.0 | 1.5 | 0.5 | the mood you want beats the genre label |
+| `energy-focused` | 0.75 | 1.5 | 3.0 | 0.5 | energy counts double, genre half |
+
 **Why genre and mood are worth the same:** my first plan was +2 for genre and +1 for mood. When I tested it on a few profiles, a "pop, happy" listener got Gym Hero (pop, intense) above Rooftop Lights (indie pop, happy), and a "pop, chill, low energy" listener got the energetic Sunrise City as the #2 pick. Genre is your long-term taste, but mood is what you want right now, so I made them equal. That put Rooftop Lights at #2 and pushed Sunrise City down to #4. I also tried making mood worth more than genre (1 and 2). It helped the "pop + chill" listener even more, but then a genre match was worth less than being 0.67 closer in energy, so I kept them equal.
 
 **My plan (data flow):**
@@ -115,6 +124,12 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+4. Switch the ranking strategy with `--mode` (default is `balanced`):
+
+```bash
+python -m src.main --mode mood-first   # balanced, genre-first, mood-first or energy-focused
+```
+
 ### Running Tests
 
 Run the starter tests with:
@@ -129,12 +144,13 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Output of `python -m src.main`, one block per profile. Every run starts with:
+Output of `python -m src.main` (default `balanced` mode), one block per profile. Every run starts with:
 
 ```text
 $ python -m src.main
 Loading songs from data/songs.csv...
 Loaded songs: 20
+Scoring mode: Balanced - genre and mood count the same (my recipe)
 ```
 
 ### High-Energy Pop

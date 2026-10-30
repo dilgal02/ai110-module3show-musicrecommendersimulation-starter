@@ -9,7 +9,9 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
-from src.recommender import load_songs, recommend_songs, max_score
+import argparse
+
+from src.recommender import load_songs, recommend_songs, max_score, MODES
 
 WIDTH = 60
 
@@ -51,7 +53,7 @@ PROFILES = {
 }
 
 
-def print_recommendations(name: str, user_prefs: dict, recommendations: list) -> None:
+def print_recommendations(name: str, user_prefs: dict, recommendations: list, best: float) -> None:
     """Print one profile's recommendations with their scores and reasons."""
     acoustic = "likes acoustic" if user_prefs["likes_acoustic"] else "prefers electronic"
     print(f"\nTop {len(recommendations)} for: {name}")
@@ -72,7 +74,6 @@ def print_recommendations(name: str, user_prefs: dict, recommendations: list) ->
     for extra in extras:
         print(f"  {extra}")
     print("=" * WIDTH)
-    best = max_score(user_prefs)
     for rank, (song, score, explanation) in enumerate(recommendations, start=1):
         heading = f"{rank:>2}. {song['title']} by {song['artist']}"
         print(f"{heading:<48} {score:.2f} / {best:.2f}")
@@ -83,12 +84,18 @@ def print_recommendations(name: str, user_prefs: dict, recommendations: list) ->
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Music Recommender Simulation")
+    parser.add_argument("--mode", choices=MODES, default="balanced",
+                        help="ranking strategy to use (default: balanced)")
+    mode = MODES[parser.parse_args().mode]
+
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
+    print(f"Scoring mode: {mode.name} - {mode.description}")
 
     for name, user_prefs in PROFILES.items():
-        recommendations = recommend_songs(user_prefs, songs, k=5)
-        print_recommendations(name, user_prefs, recommendations)
+        recommendations = recommend_songs(user_prefs, songs, k=5, mode=mode)
+        print_recommendations(name, user_prefs, recommendations, max_score(user_prefs, mode))
 
 
 if __name__ == "__main__":

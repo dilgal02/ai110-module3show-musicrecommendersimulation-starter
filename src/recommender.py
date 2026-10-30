@@ -7,7 +7,6 @@ GENRE_POINTS = 1.5
 MOOD_POINTS = 1.5
 ENERGY_POINTS = 1.5
 ACOUSTIC_POINTS = 0.5
-MAX_SCORE = GENRE_POINTS + MOOD_POINTS + ENERGY_POINTS + ACOUSTIC_POINTS
 
 # Advanced features (Challenge 1). Each rule only counts if the profile sets that preference.
 MOOD_TAG_POINTS = 0.5   # per shared tag
@@ -16,6 +15,34 @@ DECADE_POINTS = 0.5     # half for a neighboring decade
 POPULARITY_POINTS = 0.5
 INSTRUMENTAL_POINTS = 0.5
 EXPLICIT_PENALTY = 1.0
+
+@dataclass(frozen=True)
+class ScoringMode:
+    """A ranking strategy: how many points each core rule in score_song is worth."""
+    name: str
+    description: str
+    genre: float
+    mood: float
+    energy: float
+    acoustic: float
+
+    @property
+    def max_points(self) -> float:
+        return self.genre + self.mood + self.energy + self.acoustic
+
+# Strategy pattern (Challenge 2): score_song stays the same, a mode only changes the weights,
+# so adding a new mode is one more entry here.
+MODES = {
+    "balanced": ScoringMode("Balanced", "genre and mood count the same (my recipe)",
+                            GENRE_POINTS, MOOD_POINTS, ENERGY_POINTS, ACOUSTIC_POINTS),
+    "genre-first": ScoringMode("Genre-First", "genre counts double compared to mood",
+                               2.0, 1.0, 1.5, 0.5),
+    "mood-first": ScoringMode("Mood-First", "the mood you want beats the genre label",
+                              1.0, 2.0, 1.5, 0.5),
+    "energy-focused": ScoringMode("Energy-Focused", "energy counts double, genre half",
+                                  0.75, 1.5, 3.0, 0.5),
+}
+DEFAULT_MODE = MODES["balanced"]
 
 @dataclass
 class Song:
@@ -87,7 +114,7 @@ def load_songs(csv_path: str) -> List[Dict]:
             songs.append(row)
     return songs
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
+def score_song(user_prefs: Dict, song: Dict, mode: ScoringMode = DEFAULT_MODE) -> Tuple[float, List[str]]:
     """Score one song against the user's preferences and return (score, reasons)."""
     score = 0.0
     reasons = []
@@ -95,30 +122,30 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     genre = song["genre"].lower()
     favorite_genre = user_prefs["favorite_genre"].lower()
     if genre == favorite_genre:
-        score += GENRE_POINTS
-        reasons.append(f"genre match: {genre} (+{GENRE_POINTS:.2f})")
+        score += mode.genre
+        reasons.append(f"genre match: {genre} (+{mode.genre:.2f})")
     elif favorite_genre and (favorite_genre in genre or genre in favorite_genre):
         # partial match, e.g. "pop" and "indie pop"
-        points = GENRE_POINTS / 2
+        points = mode.genre / 2
         score += points
         reasons.append(f"similar genre: {genre} (+{points:.2f})")
 
     mood = song["mood"].lower()
     if mood == user_prefs["favorite_mood"].lower():
-        score += MOOD_POINTS
-        reasons.append(f"mood match: {mood} (+{MOOD_POINTS:.2f})")
+        score += mode.mood
+        reasons.append(f"mood match: {mood} (+{mode.mood:.2f})")
 
     # closer to the target is better, not higher
     target_energy = user_prefs["target_energy"]
-    points = ENERGY_POINTS * (1 - abs(song["energy"] - target_energy))
+    points = mode.energy * (1 - abs(song["energy"] - target_energy))
     score += points
     reasons.append(f"energy {song['energy']:.2f} vs your {target_energy:.2f} (+{points:.2f})")
 
     acousticness = song["acousticness"]
     if user_prefs["likes_acoustic"]:
-        points = ACOUSTIC_POINTS * acousticness
+        points = mode.acoustic * acousticness
     else:
-        points = ACOUSTIC_POINTS * (1 - acousticness)
+        points = mode.acoustic * (1 - acousticness)
     score += points
     reasons.append(f"acousticness {acousticness:.2f} (+{points:.2f})")
 
@@ -162,9 +189,9 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     return score, reasons
 
-def max_score(user_prefs: Dict) -> float:
-    """Return the best possible score for this profile, counting only the rules it uses."""
-    total = MAX_SCORE
+def max_score(user_prefs: Dict, mode: ScoringMode = DEFAULT_MODE) -> float:
+    """Return the best possible score for this profile and mode, counting only the rules it uses."""
+    total = mode.max_points
     total += MOOD_TAG_POINTS * min(len(user_prefs.get("mood_tags", [])), MAX_MOOD_TAGS)
     if "favorite_decade" in user_prefs:
         total += DECADE_POINTS
@@ -174,9 +201,10 @@ def max_score(user_prefs: Dict) -> float:
         total += INSTRUMENTAL_POINTS
     return total
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
+def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5,
+                    mode: ScoringMode = DEFAULT_MODE) -> List[Tuple[Dict, float, str]]:
     """Score every song, sort from highest to lowest, and return the top k as (song, score, explanation)."""
     # judge every song, then rank; sorted() is stable, so ties keep their CSV order
-    judged = [(song, *score_song(user_prefs, song)) for song in songs]
+    judged = [(song, *score_song(user_prefs, song, mode)) for song in songs]
     ranked = sorted(judged, key=lambda item: item[1], reverse=True)
     return [(song, score, "; ".join(reasons)) for song, score, reasons in ranked[:k]]
