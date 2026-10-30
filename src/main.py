@@ -10,11 +10,13 @@ You will implement the functions in recommender.py:
 """
 
 import argparse
+import textwrap
 
 from src.recommender import (load_songs, recommend_songs, max_score, MODES,
                              ARTIST_PENALTY, GENRE_PENALTY)
 
 WIDTH = 60
+TABLE_WIDTHS = [2, 24, 6, 42]  # rank, song + artist, score, reasons
 
 # Keys match the UserProfile fields so both versions of the recommender use the same profile.
 PROFILES = {
@@ -54,10 +56,10 @@ PROFILES = {
 }
 
 
-def print_recommendations(name: str, user_prefs: dict, recommendations: list, best: float) -> None:
-    """Print one profile's recommendations with their scores and reasons."""
+def print_header(name: str, user_prefs: dict, count: int) -> None:
+    """Print the profile name and the preferences it was scored with."""
     acoustic = "likes acoustic" if user_prefs["likes_acoustic"] else "prefers electronic"
-    print(f"\nTop {len(recommendations)} for: {name}")
+    print(f"\nTop {count} for: {name}")
     print(f"  {user_prefs['favorite_genre']} / {user_prefs['favorite_mood']} / "
           f"energy {user_prefs['target_energy']:.2f} / {acoustic}")
     # advanced preferences are optional, so only show the ones this profile sets
@@ -74,6 +76,11 @@ def print_recommendations(name: str, user_prefs: dict, recommendations: list, be
         extras.append("no explicit lyrics")
     for extra in extras:
         print(f"  {extra}")
+
+
+def print_recommendations(name: str, user_prefs: dict, recommendations: list, best: float) -> None:
+    """Print one profile's recommendations with their scores and reasons."""
+    print_header(name, user_prefs, len(recommendations))
     print("=" * WIDTH)
     for rank, (song, score, explanation) in enumerate(recommendations, start=1):
         heading = f"{rank:>2}. {song['title']} by {song['artist']}"
@@ -84,12 +91,47 @@ def print_recommendations(name: str, user_prefs: dict, recommendations: list, be
         print("-" * WIDTH)
 
 
+def render_table(headers: list, rows: list, widths: list) -> str:
+    """Draw an ASCII grid where every cell is a list of lines, wrapping lines that are too long."""
+    def border(char: str) -> str:
+        return "+" + "+".join(char * (width + 2) for width in widths) + "+"
+
+    def line(cells: list) -> str:
+        return "|" + "|".join(f" {cell:<{width}} " for cell, width in zip(cells, widths)) + "|"
+
+    out = [border("-"), line(headers), border("=")]
+    for row in rows:
+        cells = []
+        for lines, width in zip(row, widths):
+            wrapped = []
+            for text in lines:
+                wrapped += textwrap.wrap(text, width, subsequent_indent="  ") if len(text) > width else [text]
+            cells.append(wrapped)
+        for i in range(max(len(cell) for cell in cells)):
+            out.append(line([cell[i] if i < len(cell) else "" for cell in cells]))
+        out.append(border("-"))
+    return "\n".join(out)
+
+
+def print_table(name: str, user_prefs: dict, recommendations: list, best: float) -> None:
+    """Print one profile's recommendations as a table, with every reason on its own line."""
+    print_header(name, user_prefs, len(recommendations))
+    rows = [[[str(rank)],
+             [song["title"], f"by {song['artist']}"],
+             [f"{score:>6.2f}", f"/ {best:.2f}"],
+             explanation.split("; ")]
+            for rank, (song, score, explanation) in enumerate(recommendations, start=1)]
+    print(render_table(["#", "Song", "Score", "Reasons"], rows, TABLE_WIDTHS))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Music Recommender Simulation")
     parser.add_argument("--mode", choices=MODES, default="balanced",
                         help="ranking strategy to use (default: balanced)")
     parser.add_argument("--diverse", action="store_true",
                         help="penalize artists and genres that are already in the top list")
+    parser.add_argument("--table", action="store_true",
+                        help="show each profile's top songs as a summary table")
     args = parser.parse_args()
     mode = MODES[args.mode]
 
@@ -100,9 +142,10 @@ def main() -> None:
         print(f"Diversity penalty: on (-{ARTIST_PENALTY:.2f} per repeated artist, "
               f"-{GENRE_PENALTY:.2f} per repeated genre)")
 
+    show = print_table if args.table else print_recommendations
     for name, user_prefs in PROFILES.items():
         recommendations = recommend_songs(user_prefs, songs, k=5, mode=mode, diverse=args.diverse)
-        print_recommendations(name, user_prefs, recommendations, max_score(user_prefs, mode))
+        show(name, user_prefs, recommendations, max_score(user_prefs, mode))
 
 
 if __name__ == "__main__":
