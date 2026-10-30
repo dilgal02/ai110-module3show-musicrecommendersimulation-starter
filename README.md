@@ -57,6 +57,16 @@ This is a late-night study listener. I picked it because the catalog has three l
 5. **Acousticness:** up to +0.5. If `likes_acoustic` is True the song gets `0.5 * acousticness`, otherwise `0.5 * (1 - acousticness)`.
 6. Sort from highest to lowest score (ties keep the CSV order) and return the top k. The explanation lists which rules gave the song points.
 
+**Advanced features (Challenge 1):** songs also have `popularity`, `release_decade`, `mood_tags`, `instrumentalness` and `explicit`. Each new rule only counts if the profile sets that preference, so my three main profiles still score out of 5.0 exactly like before.
+
+- **Mood tags:** +0.5 for each tag the song shares with the profile's `mood_tags`, up to +1.0. This gives credit for moods that are close but not the same word, like an "euphoric" song tagged "uplifting" for a happy listener.
+- **Decade:** +0.5 for the `favorite_decade`, +0.25 for the decade right next to it.
+- **Popularity:** up to +0.5 for being close to `target_popularity` (0-100).
+- **Instrumental:** up to +0.5, works like the acoustic rule, based on `likes_instrumental`.
+- **Explicit:** -1.0 if `allow_explicit` is False and the song has explicit lyrics.
+
+The score is shown out of the best possible score for that profile, so Family Road Trip (High-Energy Pop plus all the new preferences) is out of 7.5.
+
 **Why genre and mood are worth the same:** my first plan was +2 for genre and +1 for mood. When I tested it on a few profiles, a "pop, happy" listener got Gym Hero (pop, intense) above Rooftop Lights (indie pop, happy), and a "pop, chill, low energy" listener got the energetic Sunrise City as the #2 pick. Genre is your long-term taste, but mood is what you want right now, so I made them equal. That put Rooftop Lights at #2 and pushed Sunrise City down to #4. I also tried making mood worth more than genre (1 and 2). It helped the "pop + chill" listener even more, but then a genre match was worth less than being 0.67 closer in energy, so I kept them equal.
 
 **My plan (data flow):**
@@ -222,6 +232,62 @@ Top 5 for: Deep Intense Rock
  5. Sunrise City by Neon Echo                    1.79 / 5.00
       + energy 0.82 vs your 0.90 (+1.38)
       + acousticness 0.18 (+0.41)
+------------------------------------------------------------
+```
+
+### Family Road Trip
+
+```text
+Top 5 for: Family Road Trip
+  pop / happy / energy 0.80 / prefers electronic
+  mood tags: sunny, uplifting, warm
+  decade: 2010s
+  popularity: 80
+  prefers vocals
+  no explicit lyrics
+============================================================
+ 1. Sunrise City by Neon Echo                    7.11 / 7.50
+      + genre match: pop (+1.50)
+      + mood match: happy (+1.50)
+      + energy 0.82 vs your 0.80 (+1.47)
+      + acousticness 0.18 (+0.41)
+      + mood tags: uplifting, sunny (+1.00)
+      + from the 2020s, next to your 2010s (+0.25)
+      + popularity 82 vs your 80 (+0.49)
+      + instrumentalness 0.02 (+0.49)
+------------------------------------------------------------
+ 2. Rooftop Lights by Indigo Parade              6.42 / 7.50
+      + similar genre: indie pop (+0.75)
+      + mood match: happy (+1.50)
+      + energy 0.76 vs your 0.80 (+1.44)
+      + acousticness 0.35 (+0.33)
+      + mood tags: uplifting, warm (+1.00)
+      + from the 2010s (+0.50)
+      + popularity 70 vs your 80 (+0.45)
+      + instrumentalness 0.10 (+0.45)
+------------------------------------------------------------
+ 3. Gym Hero by Max Pulse                        4.46 / 7.50
+      + genre match: pop (+1.50)
+      + energy 0.93 vs your 0.80 (+1.30)
+      + acousticness 0.05 (+0.47)
+      + from the 2020s, next to your 2010s (+0.25)
+      + popularity 88 vs your 80 (+0.46)
+      + instrumentalness 0.05 (+0.47)
+------------------------------------------------------------
+ 4. Afterglow Rush by Pulse Theory               3.44 / 7.50
+      + energy 0.95 vs your 0.80 (+1.28)
+      + acousticness 0.02 (+0.49)
+      + mood tags: uplifting (+0.50)
+      + from the 2010s (+0.50)
+      + popularity 85 vs your 80 (+0.47)
+      + instrumentalness 0.60 (+0.20)
+------------------------------------------------------------
+ 5. Island Time by Coastline Collective          3.31 / 7.50
+      + energy 0.58 vs your 0.80 (+1.17)
+      + acousticness 0.40 (+0.30)
+      + mood tags: sunny, warm (+1.00)
+      + popularity 57 vs your 80 (+0.39)
+      + instrumentalness 0.08 (+0.46)
 ------------------------------------------------------------
 ```
 

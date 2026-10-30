@@ -42,6 +42,8 @@ The recommender works like a judge handing out points. It looks at every song in
 
 Every song also gets a short list of reasons, like "mood match: chill (+1.50)", so the listener can see exactly why it was picked.
 
+**Extra rules (optional):** a listener can also pick mood tags (like "sunny" or "cozy"), a favorite decade, how popular they want the songs to be, if they like songs without singing, and if explicit lyrics are okay. Each of these adds a small bonus, or takes away a point for explicit songs, but only if the listener actually set it.
+
 **Example:** my late-night study listener wants lofi, a chill mood, low energy and acoustic sound. "Library Rain" matches the genre and the mood, has almost exactly the right energy and sounds very acoustic, so it gets 4.85 out of 5 and comes first. "Storm Runner" is a loud rock song that matches none of that, so it gets 0.79 and lands near the bottom.
 
 **What I changed from the starter logic:** the usual starting point gives 2 points for genre and 1 for mood. When I tested that, a "happy pop" listener got an intense gym song as their #2 pick, ahead of a happy indie pop song, just because genre was worth twice as much as mood. I think the genre you usually like and the mood you're in right now matter about the same, so I made them equal. I also left out tempo and danceability, because they mostly rise and fall together with energy, so adding them would count energy two or three times. Valence (how happy a song sounds) behaves differently, so I might add it later.
@@ -51,9 +53,9 @@ Every song also gets a short list of reasons, like "mood match: chill (+1.50)", 
 ## 4. Data  
 
 - The catalog has **20 songs** in `data/songs.csv`. The starter file had 10, and I added 10 more with AI help so there would be new genres and moods.
-- Every song has a title, artist, genre, mood, energy, tempo, valence, danceability and acousticness. My scoring only uses **genre, mood, energy and acousticness**.
+- Every song has a title, artist, genre, mood, energy, tempo, valence, danceability and acousticness. For Challenge 1 I added 5 more: popularity (0 to 100), release decade, a few mood tags, instrumentalness, and if it has explicit lyrics. The main scoring uses **genre, mood, energy and acousticness**. The new ones only count if a listener asks for them.
 - There are 17 genres and 16 moods. But 15 of the genres and 13 of the moods have only **one song**. Only lofi (3 songs) and pop (2 songs) have more than one.
-- All songs and artists are made up. The numbers for songs 11 to 20 were guessed by AI, not measured from real audio.
+- All songs and artists are made up. The numbers for songs 11 to 20, and all of the new Challenge 1 columns, were guessed by AI, not measured from real audio.
 - What's missing:
   - No songs that are acoustic and energetic at the same time, and only 2 that are calm and electronic.
   - No songs with energy between 0.58 and 0.75.
